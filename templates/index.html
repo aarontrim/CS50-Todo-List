@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	Home
+{% endblock %}
+
+{% block extrahead %}
+<script src={{ url_for('static', filename='editor.js') }}></script>
+<script type="text/javascript">
+var editurl = "{{ url_for('edit_item') }}";
+var addurl = "{{ url_for('add_item') }}";
+var delurl = "{{ url_for('del_item') }}";
+var upurl = "{{ url_for('up_item') }}";
+var downurl = "{{ url_for('down_item') }}";
+var maxid = {{ Item.query.session.query(func.max(Item.id))[0][0] }};
+</script>
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<h2>My Notes</h2>
+		<ul>
+			<a href="#" id="NULL" class="additem">Add New Note</a>
+			{% for item in Item.query.filter_by(userid=userid, parentid=None).order_by(Item.rank.asc()) recursive %}
+					<li><span id="text_{{ item.id }}">{{ item.text }}</span> <a href="#" class="edititem" id="edit_{{ item.id }}">edit</a> <a href="#" class="additem" id="add_{{ item.id }}">add</a> <a href="#" class="delitem", id="del_{{ item.id }}">delete</a> <a href="#" class="upitem" id="up_{{ item.id }}">↑</a> <a href="#" class="downitem" id="down_{{ item.id }}">↓</a>
+
+						{% with children = item.query.filter_by(parentid=item.id).order_by(Item.rank.asc()) %}
+							{% if children.count() > 0 %}
+								<ul>
+									{{ loop(children) }}
+								</ul>
+							{% endif %}
+						{% endwith %}
+					</li>
+			{% endfor %}
+		</ul>
+	</div>
+{% endblock %}

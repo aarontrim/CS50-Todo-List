@@ -18,6 +18,11 @@ var maxid = {{ Item.query.session.query(func.max(Item.id))[0][0] }};
 
 {% block content %}
 	<div class="container">
+		{% if user.temporary == 0 %}
+			<p>Logged in as: {{ user.name }}</p>
+		{% else %}
+			<p>Logged in as: Temp User (<a href="{{ url_for('register')}}?uid={{ user.id }}">save</a>)</p>
+		{% endif %}
 		<h2>My Notes</h2>
 		<ul>
 			<a href="#" id="NULL" class="additem">Add New Note</a>

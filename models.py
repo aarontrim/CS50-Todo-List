@@ -12,6 +12,8 @@ class User(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(250), nullable=False)
 	password = db.Column(db.String(250), nullable=False)
+	temporary = db.Column(db.Integer, nullable=False) # boolean flag for whether this is a temporary user
+	date_created = db.Column(db.String(11), nullable=False)
 
 	def __repr__(self):
 		return '<User %r>' % self.name

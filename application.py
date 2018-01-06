@@ -2,6 +2,10 @@ import os
 from flask import Flask, jsonify, render_template, request, url_for, redirect, session, flash, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
+from uuid import uuid4
+import datetime
+
+import functions
 # Flask initalisation
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -26,7 +30,7 @@ def index():
     if not session.get("user_id"):
         return redirect(url_for('login'))
     else:
-        return render_template("index.html", Item=Item, userid=session.get("user_id"), func=func)
+        return render_template("index.html", Item=Item, userid=session.get("user_id"), func=func, user=User.query.filter_by(id=session.get('user_id')).first())
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -47,6 +51,20 @@ def login():
         # show login page
         return render_template("login.html")
 
+@app.route("/logintemp", methods=["POST", "GET"])
+def logintemp():
+    if request.method == "POST":
+        if request.form.get("tempuser", False):
+            # create temp user and login
+            tempuser = User(name=str(uuid4()), password=generate_password_hash(str(uuid4())), temporary=1, date_created=functions.now())
+            db.session.add(tempuser)
+            db.session.commit()
+            session['user_id'] = tempuser.id
+            return redirect(url_for("index"))
+    else:
+        return redirect(url_for("login"))
+
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -57,15 +75,39 @@ def register():
     if request.method == "POST":
         # register user
         if len(request.form.get("email")) > 0 and len(request.form.get("password")) > 0 and len(request.form.get("confirm")) > 0 and request.form.get("password") == request.form.get("confirm"):
-            newuser = User(name=request.form.get("email"), password=generate_password_hash(request.form.get("password")))
-            if User.query.filter_by(name=newuser.name).count() == 0:
-                db.session.add(newuser)
-                db.session.commit()
-                flash("Successfully registered!")
-                return redirect(url_for("login"))
+            if request.form.get("uid", False):
+                # update details for existin temporary user
+                uid = int(request.form.get("uid"))
+                if uid == session.get("user_id"): # check its the same user as is logged in
+                    email = request.form.get("email")
+                    # find the temp user and update the login details to the form details
+                    # commit to the database unless the username already exists
+                    if User.query.filter_by(name=email).count() == 0:
+                        tempuser = User.query.filter_by(id=uid).first() 
+                        tempuser.name = email
+                        tempuser.password = generate_password_hash(request.form.get("password"))
+                        tempuser.temporary = 0
+                        db.session.commit()
+                        flash("Successfully registered!")
+                        return redirect(url_for("index"))
+                    else:
+                        flash("Username already exists! %s" % User.query.filter_by(name=email).first())
+                        return redirect(url_for("register") + "?uid=%s" % uid)
+                else:
+                    flash("Something went wrong. %s != %s" % (uid, session.get("user_id")))
+                    return redirect(url_for("register") + "?uid=%s" % uid)
+
             else:
-                flash("Username already exists!")
-                return redirect(url_for("register")) 
+                # create new user
+                newuser = User(name=request.form.get("email"), password=generate_password_hash(request.form.get("password")), temporary=0, date_created=functions.now())
+                if User.query.filter_by(name=request.form.get("email")).count() == 0:
+                    db.session.add(newuser)
+                    db.session.commit()
+                    flash("Successfully registered!")
+                    return redirect(url_for("login"))
+                else:
+                    flash("Username already exists!")
+                    return redirect(url_for("register"))
         else:
             flash("Passwords do not match!")
             return redirect(url_for("register"))

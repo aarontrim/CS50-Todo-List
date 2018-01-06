@@ -26,6 +26,11 @@
 
 					<button class="btn btn-lg btn-primary btn-block" type="submit">Log in</button>			
 				</form>
+				<br/>
+				<form class="form-signin" action="{{ url_for('logintemp') }}" method="POST">
+					<input type="hidden" name="tempuser" value="1"/>
+					<button class="btn btn-lg btn-primary btn-block" type="submit">Temporary User</button>	
+				</form>		
 			</div>
 		</div>
 	</div>

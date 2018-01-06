@@ -11,7 +11,9 @@
 			<div class="col-md-4"></div>
 			<div class="col-md-4">
 				<form class="form-signin" action="{{ url_for('register') }}" method="POST">
-			
+					{% if request.args.get("uid") %}
+						<input type="hidden" name="uid" value="{{ request.args.get('uid')}}" />
+					{% endif %}
 					<h2 class="form-signin-heading">Sign up</h2>
 					
 					<div class="form-group">

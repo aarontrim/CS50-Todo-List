@@ -1,12 +1,12 @@
 wheel==0.33.0
-click==6.7
+Click==7.0
 Django==2.1.7
-Flask==0.12.2
+Flask==1.0.2
 Flask-SQLAlchemy==2.3.2
-itsdangerous==0.24
+itsdangerous==1.1.0
 Jinja2==2.10
-MarkupSafe==1.0
+MarkupSafe==1.1.0
 pkg-resources==0.0.0
 pytz==2018.9
 SQLAlchemy==1.2.0
-Werkzeug==0.13
+Werkzeug==0.14.1

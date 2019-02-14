@@ -3,7 +3,6 @@ from flask import Flask, jsonify, render_template, request, url_for, redirect, s
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from uuid import uuid4
-import datetime
 
 import functions
 # Flask initalisation
